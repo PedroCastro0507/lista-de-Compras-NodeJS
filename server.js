@@ -7,10 +7,11 @@ let listaDeCompras = [];
 
 //Enviar item
 app.post('/item', (req, res) => {
-    const item = req.body.item;
-    if (item) {
-        listaDeCompras.push(item);
-        res.status(201).send(`Item ${item} adicionado a lista.`);
+    const nomeItem = req.body.nome;
+
+    if (nomeItem) {
+        listaDeCompras.push({ nome: nomeItem, comprado: false });
+        res.status(201).send(`Item ${nomeItem} adicionado a lista.`);
     } else {
         res.status(400).send("Item inválido.");
     }
@@ -21,12 +22,30 @@ app.get('/item', (req, res) => {
     res.status(200).json(listaDeCompras);
 });
 
-//Deletar item
-app.delete('/item:nome', (req, res) => {
+//Item comprado
+app.put('/item/:nome', (req, res) => {
     const nomeItem = req.params.nome;
+    const item = listaDeCompras.find(item => item.nome === nomeItem);
 
-    listaDeCompras.pop();
-    res.status(202).send("Item removido.")
+    if (!item) {
+        return res.status(404).send(`Item "${nomeItem}" não encontrado.`);
+    }
+
+    item.comprado = true;
+    res.status(200).send(`Item "${nomeItem}" marcado como comprado.`);
+});
+
+//Deletar item
+app.delete('/item/:nome', (req, res) => {
+    const nomeItem = req.params.nome;
+    const index = listaDeCompras.findIndex(item => item.nome === nomeItem)
+
+    if (index === -1) {
+        return res.status(404).send(`Item "${nomeItem}" não encontrado.`);
+    }
+
+    listaDeCompras.splice(index, 1);
+    res.status(200).send(`Item "${nomeItem}" removido.`);
 });
 
 app.listen(port, () => {
